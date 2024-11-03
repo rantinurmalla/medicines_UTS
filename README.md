@@ -3,6 +3,9 @@
 ### Nama : Ranti Nurmala Sari
 ### NIM : 21.01.55.0016
 
+Membuat web service untuk manajemen medicine menggunakan PHP dan MySQL dan menguji dengan menggunakan postman.
+saya membuat database bernama medicines_db pada phpmyadmin dengan tabel yang bernama medicines berisikan id, name, type, price, stock
+
 Dalam membuat web service ini saya menggunakan XAMPP (https://www.apachefriends.org/download.html),<br>
 text editor visual studio code (https://code.visualstudio.com/download),<br>
 dan postman untuk menguji API (https://code.visualstudio.com/download).
@@ -13,14 +16,17 @@ dan postman untuk menguji API (https://code.visualstudio.com/download).
 
 ### Membuat Database
 1. buka PhpMyAdmin pada brower (http://localhost/phpmyadmin/)
-2. buat database baru bernama `medicines_db` atau buat dengan SQL ```sql CREATE DATABASE medicines_db;```
-3. pada database `medicines_db`, buka tab SQL dan jalankan query untuk membuat tabel dan menambahkan data
+2. buat database baru bernama `medicines_db` atau buat dengan SQL
+   ```sql
+   CREATE DATABASE medicines_db;
+   ```
+4. pada database `medicines_db`, buka tab SQL dan jalankan query untuk membuat tabel dan menambahkan data
   ```sql
   CREATE TABLE medicines (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    type VARCHAR(255) NOT NULL,
-    price VARCHAR(255) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    type VARCHAR(100) NOT NULL,
+    price VARCHAR(50) NOT NULL,
     stock INT(11) NOT NULL
   );
   
@@ -150,3 +156,117 @@ switch ($method) {
 }
 ?>
 ```
+### Pengujian dengan postman
+1. buka postman
+2. implementasi endpoint API
+   #### GET `/api/[object]`
+   1. menampilkan semua data
+      - menggunakan method GET
+      - dengan URL : `http://localhost/uts_medicine/medicines_api.php/`
+      - lalu send
+   2. mencari data dengan value type,
+      - menggunakan method GET
+      - dengan URL : `http://localhost/uts_medicine/medicines_api.php/search?&term=syrup`
+      - lalu send
+   #### GET `/api/[object]/{id}`
+   1. menampilkan data berdasarkan id,
+      - menggunakan method GET
+      - dengan URL : `http://localhost/uts_medicine/medicines_api.php/3`
+      - lalu send
+   2. response 404 jika data tidak ditemukan,
+      - menggunakan method GET
+      - dengan URL : `http://localhost/uts_medicine/medicines_api.php/9`
+      - lalu send
+      (data sampel saya hanya berisi 6 data)
+   #### POST `/api/[object]`
+   1. menambah data baru,
+      - menggunakan method POST
+      - dengan URL `http://localhost/uts_medicine/medicines_api.php`
+      - pada Headers
+        - key: Content-Type
+        - value: application/json
+      - pada Body
+        - pilih "raw" dan "JSON"
+        - masukkan:
+          ```json
+          {
+            "name": "OBH Combi",
+            "type": "Syrup",
+            "price": "Rp 16500",
+            "stock": 8
+          }
+          ```
+       - lalu send
+   2. validasi input
+      - menggunakan method POST
+      - dengan URL `http://localhost/uts_medicine/medicines_api.php`
+      - pada Headers
+        - key : Content-Type
+        - value : application/json
+      - pada Body
+        - pilih "raw" dan "JSON"
+        - masukkan :
+          ```json
+          {
+            "name": "Panadol",
+            "type": "Tablet",
+            "price": "Rp 10000",
+            "stock": 15
+          }
+      - lalu send
+   3. response 201 maka validasi input berhasil, hasilnya :
+      ```json
+      {
+        "message": "Medicine created",
+        "id": "9"
+      }
+      ```
+   #### PUT `/api/[objek]/{id}`
+   1. mengupdate data berdasarkan ID
+      - menggunakan method PUT
+      - dengan URL `http://localhost/uts_medicine/medicines_api.php/9`
+      - pada Headers
+        - key : Content-Type
+        - value : application/json
+      - pada Body
+        - pilih "raw" dan "JSON"
+        - masukkan :
+          ```json
+          {        
+            "name": "Panadol Biru",
+            "type": "Tablet",
+            "price": "Rp 10000",
+            "stock": 15
+          }
+      - lalu send
+   2. validasi input
+      - menggunakan method PUT
+      - dengan URL `http://localhost/uts_medicine/medicines_api.php/2`
+      - pada Headers
+        - key : Content-Type
+        - value : application/json
+      - pada Body
+        - pilih "raw" dan "JSON"
+        - masukkan :
+          ```json
+          {        
+            "name": "Insto",
+            "type": "Obat Tetes",
+            "price": "Rp 17000",
+            "stock": "lima"
+          }
+      - lalu send
+   3. Response 404 karena stock hanya bisa menggunakan angka, hasilnyanya :
+      ```json
+      {
+        "errors": [
+        "Stock must be a number"
+        ]
+      }
+      ```
+   #### DELETE `/api/[objek]/{id}`
+   1. menghapus data berdasarkan ID
+      - menggunakan method DELETE
+      - dengan URL `http://localhost/uts_medicine/medicines_api.php/7`
+      - lalu send
+   3. Response 404 jika data tidak ditemukan
