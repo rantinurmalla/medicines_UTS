@@ -46,7 +46,7 @@ dan postman untuk menguji API (https://code.visualstudio.com/download).
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, typeization, X-Requested-With");
 
 $method = $_SERVER['REQUEST_METHOD'];
 $request = [];
@@ -83,31 +83,77 @@ function response($status, $data = NULL) {
     exit();
 }
 
+function validatemedicines($name, $type, $price, $stock) {
+    $errors = [];
+    if (empty($name)) {
+        $errors[] = "Name is required";
+    }
+    if (empty($type)) {
+        $errors[] = "Type is required";
+    }
+    if (empty($price)) {
+        $errors[] = "Price is required";
+    }
+    if (!is_numeric($stock) || strlen($stock)) {
+        $errors[] = "Stock must be a number";
+    }
+    return $errors;
+}
+
 $db = getConnection();
 
 switch ($method) {
     case 'GET':
         if (!empty($request) && isset($request[0])) {
-            $id = $request[0];
-            $stmt = $db->prepare("SELECT * FROM medicines WHERE id = ?");
-            $stmt->execute([$id]);
-            $Medicine = $stmt->fetch();
-            if ($Medicine) {
-                response(200, $Medicine);
+            if ($request[0] === 'search') {
+                // 5.1 Search functionality
+                $searchTerm = $_GET['term'] ?? '';
+                $stmt = $db->prepare("SELECT * FROM medicines WHERE name LIKE ? OR type LIKE ?");
+                $searchTerm = "%$searchTerm%";
+                $stmt->execute([$searchTerm, $searchTerm]);
+                $medicines = $stmt->fetchAll();
+                response(200, $medicines);
             } else {
-                response(404, ["message" => "Medicine not found"]);
+                // Get specific medicines
+                $id = $request[0];
+                $stmt = $db->prepare("SELECT * FROM medicines WHERE id = ?");
+                $stmt->execute([$id]);
+                $medicines = $stmt->fetch();
+                if ($medicines) {
+                    response(200, $medicines);
+                } else {
+                    response(404, ["message" => "medicines not found"]);
+                }
             }
         } else {
-            $stmt = $db->query("SELECT * FROM medicines");
+            // 5.2 Pagination
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
+            $offset = ($page - 1) * $limit;
+
+            $stmt = $db->prepare("SELECT * FROM medicines LIMIT ? OFFSET ?");
+            $stmt->bindValue(1, $limit, PDO::PARAM_INT);
+            $stmt->bindValue(2, $offset, PDO::PARAM_INT);
+            $stmt->execute();
             $medicines = $stmt->fetchAll();
-            response(200, $medicines);
+
+            $totalStmt = $db->query("SELECT COUNT(*) FROM medicines");
+            $total = $totalStmt->fetchColumn();
+
+            response(200, [
+                'medicines' => $medicines,
+                'total' => $total,
+                'page' => $page,
+                'limit' => $limit
+            ]);
         }
         break;
     
     case 'POST':
         $data = json_decode(file_get_contents("php://input"));
-        if (!isset($data->name) || !isset($data->type) || !isset($data->price) || !isset($data->stock)) {
-            response(400, ["message" => "Missing required fields"]);
+        $errors = validatemedicines($data->name ?? '', $data->type ?? '', $data->price ?? '', $data->stock ?? '');
+        if (!empty($errors)) {
+            response(400, ["errors" => $errors]);
         }
         $sql = "INSERT INTO medicines (name, type, price, stock) VALUES (?, ?, ?, ?)";
         $stmt = $db->prepare($sql);
@@ -124,8 +170,9 @@ switch ($method) {
         }
         $id = $request[0];
         $data = json_decode(file_get_contents("php://input"));
-        if (!isset($data->name) || !isset($data->type) || !isset($data->price) || !isset($data->stock)) {
-            response(400, ["message" => "Missing required fields"]);
+        $errors = validatemedicines($data->name ?? '', $data->type ?? '', $data->price ?? '', $data->stock ?? '');
+        if (!empty($errors)) {
+            response(404, ["errors" => $errors]);
         }
         $sql = "UPDATE medicines SET name = ?, type = ?, price = ?, stock = ? WHERE id = ?";
         $stmt = $db->prepare($sql);
@@ -164,20 +211,99 @@ switch ($method) {
       - menggunakan method GET
       - dengan URL : `http://localhost/uts_medicine/medicines_api.php/`
       - lalu send
+      - hasilnya :
+        ```json
+        {
+          "medicines": [
+        {
+            "id": 1,
+            "name": "Splasminal",
+            "type": "Tablet",
+            "price": "Rp 12000",
+            "stock": 10
+        },
+        {
+            "id": 2,
+            "name": "Insto",
+            "type": "Obat Tetes",
+            "price": "Rp 17000",
+            "stock": 6
+        },
+        {
+            "id": 3,
+            "name": "Polysilane",
+            "type": "Syrup",
+            "price": "Rp 20500",
+            "stock": 9
+        },
+        {
+            "id": 5,
+            "name": "Betadine",
+            "type": "Antiseptik",
+            "price": "Rp 18000",
+            "stock": 10
+        },
+        {
+            "id": 6,
+            "name": "OBH Combi Plus Mentol",
+            "type": "Syrup",
+            "price": "Rp 17500",
+            "stock": 12
+        }
+          ],
+          "total": 5,
+          "page": 1,
+          "limit": 10
+         }
+         ```
    2. mencari data dengan value type,
       - menggunakan method GET
       - dengan URL : `http://localhost/uts_medicine/medicines_api.php/search?&term=syrup`
       - lalu send
+      - hasilnya:
+        ```json
+        [
+          {
+              "id": 3,
+              "name": "Polysilane",
+              "type": "Syrup",
+              "price": "Rp 20500",
+              "stock": 9
+          },
+          {
+              "id": 6,
+              "name": "OBH Combi Plus Mentol",
+              "type": "Syrup",
+              "price": "Rp 17500",
+              "stock": 12
+          }
+        ]
+        ```
    #### GET `/api/[object]/{id}`
    1. menampilkan data berdasarkan id,
       - menggunakan method GET
       - dengan URL : `http://localhost/uts_medicine/medicines_api.php/3`
       - lalu send
+      - hasilnya :
+        ```json
+        {
+          "id": 3,
+          "name": "Polysilane",
+          "type": "Syrup",
+          "price": "Rp 20500",
+          "stock": 9
+        }
+        ```
    2. response 404 jika data tidak ditemukan,
       - menggunakan method GET
-      - dengan URL : `http://localhost/uts_medicine/medicines_api.php/9`
+      - dengan URL : `http://localhost/uts_medicine/medicines_api.php/15`
       - lalu send
-      (data sampel saya hanya berisi 6 data)
+      - hasilnya :
+        ```json
+        {
+          "message": "medicines not found"
+        }
+        ```
    #### POST `/api/[object]`
    1. menambah data baru,
       - menggunakan method POST
@@ -197,6 +323,12 @@ switch ($method) {
           }
           ```
        - lalu send
+         ```json
+         {
+          "message": "Medicine created",
+          "id": "7"
+         }
+         ```
    2. validasi input
       - menggunakan method POST
       - dengan URL `http://localhost/uts_medicine/medicines_api.php`
@@ -239,6 +371,12 @@ switch ($method) {
             "stock": 15
           }
       - lalu send
+      - hasilnya :
+        ```json
+        {
+           "message": "Medicine updated"
+        }
+        ```
    2. validasi input
       - menggunakan method PUT
       - dengan URL `http://localhost/uts_medicine/medicines_api.php/2`
@@ -269,4 +407,10 @@ switch ($method) {
       - menggunakan method DELETE
       - dengan URL `http://localhost/uts_medicine/medicines_api.php/7`
       - lalu send
-   3. Response 404 jika data tidak ditemukan
+      - hasilnya :
+        ```json
+        {
+          "message": "Medicine deleted"
+        }
+        ```
+   2. Response 404 jika data tidak ditemukan
