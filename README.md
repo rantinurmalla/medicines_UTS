@@ -207,7 +207,7 @@ switch ($method) {
 1. buka postman
 2. implementasi endpoint API
    #### GET `/api/[object]`
-   1. menampilkan semua data
+   a. menampilkan semua data
       - menggunakan method GET
       - dengan URL : `http://localhost/uts_medicine/medicines_api.php/`
       - lalu send
@@ -256,7 +256,7 @@ switch ($method) {
           "limit": 10
          }
          ```
-   2. mencari data dengan value type,
+   b. mencari data dengan value type,
       - menggunakan method GET
       - dengan URL : `http://localhost/uts_medicine/medicines_api.php/search?&term=syrup`
       - lalu send
@@ -280,7 +280,7 @@ switch ($method) {
         ]
         ```
    #### GET `/api/[object]/{id}`
-   1. menampilkan data berdasarkan id,
+   a. menampilkan data berdasarkan id,
       - menggunakan method GET
       - dengan URL : `http://localhost/uts_medicine/medicines_api.php/3`
       - lalu send
@@ -294,7 +294,7 @@ switch ($method) {
           "stock": 9
         }
         ```
-   2. response 404 jika data tidak ditemukan,
+   b. response 404 jika data tidak ditemukan,
       - menggunakan method GET
       - dengan URL : `http://localhost/uts_medicine/medicines_api.php/15`
       - lalu send
@@ -305,7 +305,7 @@ switch ($method) {
         }
         ```
    #### POST `/api/[object]`
-   1. menambah data baru,
+   a. menambah data baru,
       - menggunakan method POST
       - dengan URL `http://localhost/uts_medicine/medicines_api.php`
       - pada Headers
@@ -329,7 +329,7 @@ switch ($method) {
           "id": "7"
          }
          ```
-   2. validasi input
+   b. validasi input
       - menggunakan method POST
       - dengan URL `http://localhost/uts_medicine/medicines_api.php`
       - pada Headers
@@ -346,7 +346,7 @@ switch ($method) {
             "stock": 15
           }
       - lalu send
-   3. response 201 maka validasi input berhasil, hasilnya :
+   c. response 201 maka validasi input berhasil, hasilnya :
       ```json
       {
         "message": "Medicine created",
@@ -354,7 +354,7 @@ switch ($method) {
       }
       ```
    #### PUT `/api/[objek]/{id}`
-   1. mengupdate data berdasarkan ID
+   a. mengupdate data berdasarkan ID
       - menggunakan method PUT
       - dengan URL `http://localhost/uts_medicine/medicines_api.php/9`
       - pada Headers
@@ -377,7 +377,7 @@ switch ($method) {
            "message": "Medicine updated"
         }
         ```
-   2. validasi input
+   b. validasi input
       - menggunakan method PUT
       - dengan URL `http://localhost/uts_medicine/medicines_api.php/2`
       - pada Headers
@@ -394,7 +394,7 @@ switch ($method) {
             "stock": "lima"
           }
       - lalu send
-   3. Response 404 karena stock hanya bisa menggunakan angka, hasilnyanya :
+   c. Response 404 karena stock hanya bisa menggunakan angka, hasilnyanya :
       ```json
       {
         "errors": [
@@ -403,7 +403,7 @@ switch ($method) {
       }
       ```
    #### DELETE `/api/[objek]/{id}`
-   1. menghapus data berdasarkan ID
+   a. menghapus data berdasarkan ID
       - menggunakan method DELETE
       - dengan URL `http://localhost/uts_medicine/medicines_api.php/7`
       - lalu send
@@ -413,4 +413,4 @@ switch ($method) {
           "message": "Medicine deleted"
         }
         ```
-   2. Response 404 jika data tidak ditemukan
+   b. Response 404 jika data tidak ditemukan
