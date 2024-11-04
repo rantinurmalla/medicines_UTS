@@ -345,7 +345,7 @@ switch ($method) {
             "price": "Rp 10000",
             "stock": 15
           }
-      - lalu send
+      - lalu send<br>
    c. response 201 maka validasi input berhasil, hasilnya :
       ```json
       {
@@ -393,7 +393,7 @@ switch ($method) {
             "price": "Rp 17000",
             "stock": "lima"
           }
-      - lalu send
+      - lalu send<br>
    c. Response 404 karena stock hanya bisa menggunakan angka, hasilnyanya :
       ```json
       {
