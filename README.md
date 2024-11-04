@@ -414,3 +414,5 @@ switch ($method) {
         }
         ```
    b. Response 404 jika data tidak ditemukan
+### KESIMPULAN
+Dalam praktikum ini, Saya telah berhasil membuat web service untuk manajemen medicines menggunakan PHP dan MySQL. Saya juga telah belajar cara menguji API menggunakan Postman, yang memiliki fitur pencarian, validasi input, dan meningkatkan fungsional dan keamanannya. akan tetapi pada response 404 pada perintah delete tidak bisa.
